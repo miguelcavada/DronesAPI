@@ -7,5 +7,9 @@ namespace DronesAPI.Models
         public DronesContext(DbContextOptions options) : base(options)
         {
         }
+
+        public DbSet<Drone> Drones { get; set; }
+        public DbSet<Medication> Medications { get; set; }
+        public DbSet<BatteryLevelsHistory> BatteryLevelsHistories { get; set; }
     }
 }
