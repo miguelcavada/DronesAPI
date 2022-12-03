@@ -5,7 +5,9 @@
         public Guid Id { get; set; }
 
         public Guid DroneId { get; set; }
+
         public decimal BatteryLevel {get;set;}
-        public DateTime VerificationDate { get; set; }
+
+        public DateTime Created { get; set; }
     }
 }

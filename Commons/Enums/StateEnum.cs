@@ -2,6 +2,11 @@
 {
     public enum StateEnum
     {
-        IDLE, LOADING, LOADED, DELIVERING, DELIVERED, RETURNING
+        IDLE, 
+        LOADING, 
+        LOADED, 
+        DELIVERING, 
+        DELIVERED, 
+        RETURNING
     }
 }

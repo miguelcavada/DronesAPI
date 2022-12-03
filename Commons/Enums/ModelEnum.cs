@@ -2,6 +2,9 @@
 {
     public enum ModelEnum
     {
-        Lightweight, Middleweight, Cruiserweight, Heavyweight
+        Lightweight, 
+        Middleweight, 
+        Cruiserweight, 
+        Heavyweight
     }
 }
