@@ -1,6 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DronesAPI.Commons;
+using DronesAPI.Commons.Enums;
+using DronesAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
-namespace DronesAPI.Models
+namespace DronesAPI.Data
 {
     public class DronesContext : DbContext
     {

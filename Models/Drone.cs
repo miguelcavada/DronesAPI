@@ -6,11 +6,16 @@ namespace DronesAPI.Models
     {
         public Guid Id { get; set; }
 
-        [StringLength(maximumLength: 100)]
+        [MaxLength(100)]
         public string SerialNumber { get; set; }
+
         public string Model { get; set; }
+
+        [MaxLength(500)]
         public int WeightLimit { get; set; }
+
         public decimal BatteryCapacity { get; set; }
+
         public string State { get; set; }
     }
 }

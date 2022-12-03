@@ -1,3 +1,4 @@
+using DronesAPI.Data;
 using DronesAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+var scope = app.Services.CreateScope();
+DatabaseInitializer.SeedData(scope.ServiceProvider.GetRequiredService<DronesContext>());
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
