@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="StaticFiles\Acetaminophen.jpeg" />
+    <Content Include="StaticFiles\Antacid.jpeg" />
+    <Content Include="StaticFiles\Aspirin.jpg" />
+    <Content Include="StaticFiles\B_Complex.jpeg" />
+    <Content Include="StaticFiles\Vitamin_C.jpeg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.10">
