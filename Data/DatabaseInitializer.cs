@@ -25,9 +25,9 @@ namespace DronesAPI.Models
             {
                 await context.Medications.AddRangeAsync(
 
-                    new Medication { Id = Guid.NewGuid(), Name = "ACETAMINOPHEN", Weight = 200, Code = "MEDIC-01", Image = string.Empty },
-                    new Medication { Id = Guid.NewGuid(), Name = "ASPIRIN", Weight = 100, Code = "MEDIC-02", Image = string.Empty },
-                    new Medication { Id = Guid.NewGuid(), Name = "ANTACID TABLETS", Weight = 300, Code = "MEDIC-03", Image = string.Empty }
+                    new Medication { Id = Guid.NewGuid(), Name = "ACETAMINOPHEN", Weight = 200, Code = "MEDIC-01", Image = null },
+                    new Medication { Id = Guid.NewGuid(), Name = "ASPIRIN", Weight = 100, Code = "MEDIC-02", Image = null },
+                    new Medication { Id = Guid.NewGuid(), Name = "ANTACID TABLETS", Weight = 300, Code = "MEDIC-03", Image = null }
 
                     );
                 await context.SaveChangesAsync();

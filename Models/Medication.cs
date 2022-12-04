@@ -6,13 +6,18 @@ namespace DronesAPI.Models
     {
         public Guid Id { get; set; }
 
-        public string Name { get; set; }
+        [Required]
+        [RegularExpression("^[a-zA-Z0-9_-]+$")]
+        public string? Name { get; set; }
 
+        [Required]
         public int Weight { get; set; }
 
-        public string Code { get; set; }
+        [Required]
+        [RegularExpression("^[A-Z0-9_]+$")]
+        public string? Code { get; set; }
 
-        public string Image { get; set; }
+        public byte[]? Image { get; set; }
 
     }
 }
