@@ -8,6 +8,6 @@
 
         public decimal BatteryLevel {get;set;}
 
-        public DateTime CreatedDate { get; set; }
+        public DateTime Created { get; set; }
     }
 }
