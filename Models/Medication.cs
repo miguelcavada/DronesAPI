@@ -8,7 +8,7 @@ namespace DronesAPI.Models
 
         [Required]
         [RegularExpression("^[a-zA-Z0-9_-]+$")]
-        public string? Name { get; set; }
+        public string Name { get; set; }
 
         [Required]
         public int Weight { get; set; }
@@ -17,7 +17,7 @@ namespace DronesAPI.Models
         [RegularExpression("^[A-Z0-9_]+$")]
         public string? Code { get; set; }
 
-        public byte[]? Image { get; set; }
+        public string Image { get; set; }
 
     }
 }
