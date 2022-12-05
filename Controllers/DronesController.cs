@@ -42,16 +42,44 @@ namespace DronesAPI.Controllers
         }
 
         /// <summary>
+        /// registering a drone
+        /// </summary>
+        /// <param name="drone"></param>
+        /// <returns></returns>
+        [HttpPost("{DroneForCreationDto}")]
+        public async Task<ActionResult<Drone>> CreateDrone([FromBody] DroneForCreationDto drone)
+        {
+            try
+            {
+                if (drone == null)
+                {
+                    return BadRequest("DroneForCreationDto object is null");
+                }
+                var droneEntity = _mapper.Map<Drone>(drone);
+
+                await _context.Drones.AddAsync(droneEntity);
+                await _context.SaveChangesAsync();
+
+                var droneDto = _mapper.Map<DroneDto>(droneEntity);
+                return Ok(droneDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        /// <summary>
         /// check drone battery level for a given drone
         /// </summary>
         /// <param name="drone"></param>
         /// <returns></returns>
         [HttpGet("{DroneDto}")]
-        public async Task<ActionResult<string>> GetBatteryLevel(DroneDto drone)
+        public async Task<ActionResult<string>> GetBatteryLevel([FromBody] DroneDto drone)
         {
             try
             {
-                var result = await _context.Drones.FirstOrDefaultAsync(x => x.SerialNumber == drone.SerialNumber);
+                var result = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(drone.Id) || x.SerialNumber.Equals(drone.SerialNumber));
                 if (result == null)
                 {
                     return NotFound();

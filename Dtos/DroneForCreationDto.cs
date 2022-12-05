@@ -1,8 +1,7 @@
 ﻿namespace DronesAPI.Dtos
 {
-    public class DroneDto
+    public class DroneForCreationDto
     {
-        public Guid Id { get; set; }
         public string SerialNumber { get; set; }
         public string Model { get; set; }
         public int WeightLimit { get; set; }

@@ -9,6 +9,7 @@ namespace DronesAPI.Profiles
         public DroneProfile()
         {
             CreateMap<Drone, DroneDto>();
+            CreateMap<DroneForCreationDto, Drone>();
         }
     }
 }
