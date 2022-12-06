@@ -4,7 +4,7 @@ namespace DronesAPI.Models
 {
     public class Drone
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
 
         [Required]
         [MaxLength(100, ErrorMessage = "Maximum length for the SerialNumber is 100 characters.")]
@@ -20,5 +20,7 @@ namespace DronesAPI.Models
         public int BatteryCapacity { get; set; }
 
         public string State { get; set; }
+
+        public List<DroneItem>? DroneItems { get; set; }
     }
 }

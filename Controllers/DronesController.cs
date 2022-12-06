@@ -47,7 +47,7 @@ namespace DronesAPI.Controllers
         /// <param name="drone"></param>
         /// <returns></returns>
         [HttpPost("{DroneForCreationDto}")]
-        public async Task<ActionResult<Drone>> CreateDrone([FromBody] DroneForCreationDto drone)
+        public async Task<ActionResult<DroneDto>> CreateDrone([FromBody] DroneForCreationDto drone)
         {
             try
             {
@@ -79,13 +79,60 @@ namespace DronesAPI.Controllers
         {
             try
             {
-                var result = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(drone.Id) || x.SerialNumber.Equals(drone.SerialNumber));
+                var result = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(drone.Id));
                 if (result == null)
                 {
                     return NotFound();
                 }
                 var droneDto = _mapper.Map<Drone>(result);
                 return Ok(new { batteryLevel = $"The battery level for given drone is {droneDto.BatteryCapacity}%" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        /// <summary>
+        /// loading a drone with medication items
+        /// </summary>
+        /// <param name="drone"></param>
+        /// <returns></returns>
+        [HttpPost("{DroneDto}")]
+        public async Task<ActionResult<Drone>> LoadingDroneItems([FromBody] DroneDto drone)
+        {
+            var currentDate = DateTime.Now;
+            try
+            {
+                var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(drone.Id));
+
+                if (droneEntity != null)
+                {
+                    if (droneEntity.BatteryCapacity < 25)
+                    {
+                        return BadRequest("The given drone has its battery level less than 25%");
+                    }
+                    else
+                    {
+                        foreach (var item in drone.Medications)
+                        {
+                            var suma = (droneEntity.DroneItems?.Sum(x => x.WeightMedication) + item.Weight);
+                            if (suma > droneEntity.WeightLimit)
+                            {
+                                break;
+                            }
+                            await _context.DroneItems.AddAsync(new DroneItem
+                            {
+                                DroneId = droneEntity.Id,
+                                ItemBaseId = item.Id,
+                                WeightMedication = item.Weight,
+                                CreationDate = currentDate
+                            });
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+                }
+                return Ok();
             }
             catch (Exception ex)
             {
