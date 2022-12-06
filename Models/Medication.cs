@@ -6,8 +6,8 @@ namespace DronesAPI.Models
     {
         [Required]
         [RegularExpression("^[A-Z0-9_]+$")]
-        public string Code { get; set; }
+        public string? Code { get; set; }
 
-        public string Image { get; set; }
+        public string? Image { get; set; }
     }
 }
