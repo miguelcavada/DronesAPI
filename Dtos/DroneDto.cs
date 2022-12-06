@@ -2,7 +2,7 @@
 {
     public class DroneDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string SerialNumber { get; set; }
         public string Model { get; set; }
         public int WeightLimit { get; set; }

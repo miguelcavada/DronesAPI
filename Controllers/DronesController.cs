@@ -27,18 +27,15 @@ namespace DronesAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Drone>>> GetDrones()
+        public async Task<ActionResult<IEnumerable<DroneDto>>> GetDrones()
         {
-            try
+            var drones = await _context.Drones.Where(x => x.State.Equals(StateEnum.IDLE.ToString())).ToListAsync();
+            if (!drones.Any())
             {
-                var result = await _context.Drones.Where(x => x.State.Equals(StateEnum.IDLE.ToString())).ToListAsync();
-                var dronesDto = _mapper.Map<IEnumerable<Drone>>(result);
-                return Ok(dronesDto);
+                return NoContent();
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error");
-            }
+            var droneDtos = drones.Select(x => _mapper.Map<DroneDto>(x)).ToList();
+            return droneDtos;
         }
 
         /// <summary>
@@ -77,15 +74,57 @@ namespace DronesAPI.Controllers
         [HttpGet("{DroneDto}")]
         public async Task<ActionResult<string>> GetBatteryLevel([FromBody] DroneDto drone)
         {
+            var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(drone.Id));
+            if (droneEntity == null)
+            {
+                return NotFound();
+            }
+            return $"The battery level for given drone is {droneEntity.BatteryCapacity}%";
+        }
+
+        /// <summary>
+        /// loading a drone with medication items
+        /// </summary>
+        /// <param name="droneDto"></param>
+        /// <returns></returns>
+        [HttpPut("{droneDto}")]
+        public async Task<ActionResult> LoadingDroneItems([FromBody] DroneDto droneDto)
+        {
+            var currentDate = DateTime.Now;
             try
             {
-                var result = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(drone.Id));
-                if (result == null)
+                var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(droneDto.Id));
+                if (droneEntity == null)
                 {
-                    return NotFound();
+                    return NotFound(droneDto);
                 }
-                var droneDto = _mapper.Map<Drone>(result);
-                return Ok(new { batteryLevel = $"The battery level for given drone is {droneDto.BatteryCapacity}%" });
+                droneEntity.State = StateEnum.LOADING.ToString();
+                _context.Entry(droneEntity).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                if (droneEntity.BatteryCapacity < 25)
+                {
+                    return BadRequest("The given drone has its battery level less than 25%");
+                }
+                else
+                {
+                    var medicationDtos = new List<MedicationDto>();
+
+                    foreach (var item in droneDto.Medications)
+                    {
+                        var suma = (medicationDtos.Sum(x => x.Weight) + item.Weight);
+                        if (suma > droneEntity.WeightLimit)
+                        {
+                            break;
+                        }
+                        medicationDtos.Add(item);
+                    }
+                    droneEntity.Medications?.AddRange(_mapper.Map<IEnumerable<Medication>>(medicationDtos));
+                    droneEntity.State = StateEnum.LOADED.ToString();
+                    _context.Entry(droneEntity).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+                }
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -94,50 +133,25 @@ namespace DronesAPI.Controllers
         }
 
         /// <summary>
-        /// loading a drone with medication items
+        /// checking loaded medication items for a given drone
         /// </summary>
         /// <param name="drone"></param>
         /// <returns></returns>
-        [HttpPost("{DroneDto}")]
-        public async Task<ActionResult<Drone>> LoadingDroneItems([FromBody] DroneDto drone)
+        [HttpGet("{drone}")]
+        public async Task<ActionResult<IEnumerable<MedicationDto>>> CheckingLoadedMedications([FromBody] Drone drone)
         {
-            var currentDate = DateTime.Now;
-            try
+            var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(drone.Id)
+                && x.State.Equals(StateEnum.LOADED.ToString()) || x.State.Equals(StateEnum.DELIVERING.ToString()));
+            if (droneEntity == null)
             {
-                var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(drone.Id));
-
-                if (droneEntity != null)
-                {
-                    if (droneEntity.BatteryCapacity < 25)
-                    {
-                        return BadRequest("The given drone has its battery level less than 25%");
-                    }
-                    else
-                    {
-                        foreach (var item in drone.Medications)
-                        {
-                            var suma = (droneEntity.DroneItems?.Sum(x => x.WeightMedication) + item.Weight);
-                            if (suma > droneEntity.WeightLimit)
-                            {
-                                break;
-                            }
-                            await _context.DroneItems.AddAsync(new DroneItem
-                            {
-                                DroneId = droneEntity.Id,
-                                ItemBaseId = item.Id,
-                                WeightMedication = item.Weight,
-                                CreationDate = currentDate
-                            });
-                            await _context.SaveChangesAsync();
-                        }
-                    }
-                }
-                return Ok();
+                return NotFound(drone);
             }
-            catch (Exception ex)
+            var medications = droneEntity.Medications?.Select(x => _mapper.Map<MedicationDto>(x));
+            if (medications == null)
             {
-                return StatusCode(500, "Internal server error");
+                return NoContent();
             }
+            return medications.ToList();
         }
     }
 }
