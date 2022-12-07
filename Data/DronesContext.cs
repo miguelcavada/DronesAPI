@@ -11,14 +11,9 @@ namespace DronesAPI.Data
         {
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-        }
-
         public DbSet<Drone> Drones { get; set; }
         public DbSet<ItemBase> Items { get; set; }
         public DbSet<Medication> Medications { get; set; }
-        public DbSet<BatteryLevelsHistory> BatteryLevelsHistories { get; set; }
+        public DbSet<DroneBatteryLog> DroneBatteryLogs { get; set; }
     }
 }
