@@ -21,6 +21,6 @@ namespace DronesAPI.Models
 
         public string? State { get; set; }
 
-        public List<Medication>? Medications { get; set; }
+        public List<ItemBase>? Items { get; set; }
     }
 }

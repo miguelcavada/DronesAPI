@@ -9,6 +9,7 @@ namespace DronesAPI.Profiles
         public MedicationProfile()
         {
             CreateMap<Medication, MedicationDto>();
+            CreateMap<MedicationDto, Medication>();
         }
     }
 }

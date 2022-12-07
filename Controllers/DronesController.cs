@@ -27,7 +27,7 @@ namespace DronesAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DroneDto>>> GetDrones()
+        public async Task<ActionResult> GetDrones()
         {
             var drones = await _context.Drones.Where(x => x.State.Equals(StateEnum.IDLE.ToString())).ToListAsync();
             if (!drones.Any())
@@ -35,7 +35,7 @@ namespace DronesAPI.Controllers
                 return NoContent();
             }
             var droneDtos = drones.Select(x => _mapper.Map<DroneDto>(x)).ToList();
-            return droneDtos;
+            return Ok(droneDtos);
         }
 
         /// <summary>
@@ -43,8 +43,8 @@ namespace DronesAPI.Controllers
         /// </summary>
         /// <param name="drone"></param>
         /// <returns></returns>
-        [HttpPost("{DroneForCreationDto}")]
-        public async Task<ActionResult<DroneDto>> CreateDrone([FromBody] DroneForCreationDto drone)
+        [HttpPost]
+        public async Task<ActionResult> CreateDrone([FromBody] DroneForCreationDto drone)
         {
             try
             {
@@ -69,34 +69,39 @@ namespace DronesAPI.Controllers
         /// <summary>
         /// check drone battery level for a given drone
         /// </summary>
-        /// <param name="drone"></param>
+        /// <param name="droneId"></param>
         /// <returns></returns>
-        [HttpGet("{DroneDto}")]
-        public async Task<ActionResult<string>> GetBatteryLevel([FromBody] DroneDto drone)
+        [HttpGet("BatteryLevel/{droneId}", Name = "BatteryLevel")]
+        public async Task<ActionResult> GetBatteryLevel(Guid droneId)
         {
-            var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(drone.Id));
+            var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(droneId));
             if (droneEntity == null)
             {
                 return NotFound();
             }
-            return $"The battery level for given drone is {droneEntity.BatteryCapacity}%";
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid model object");
+            }
+            return Ok($"The battery level for given drone is {droneEntity.BatteryCapacity}%");
         }
 
         /// <summary>
         /// loading a drone with medication items
         /// </summary>
-        /// <param name="droneDto"></param>
+        /// <param name="droneId"></param>
+        /// <param name="medicationDto"></param>
         /// <returns></returns>
-        [HttpPut("{droneDto}")]
-        public async Task<ActionResult> LoadingDroneItems([FromBody] DroneDto droneDto)
+        [HttpPut("{droneId}")]
+        public async Task<ActionResult> LoadingDroneItems(Guid droneId, [FromBody] IEnumerable<MedicationDto> medicationDto)
         {
             var currentDate = DateTime.Now;
             try
             {
-                var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(droneDto.Id));
+                var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(droneId));
                 if (droneEntity == null)
                 {
-                    return NotFound(droneDto);
+                    return NotFound();
                 }
                 droneEntity.State = StateEnum.LOADING.ToString();
                 _context.Entry(droneEntity).State = EntityState.Modified;
@@ -108,18 +113,18 @@ namespace DronesAPI.Controllers
                 }
                 else
                 {
-                    var medicationDtos = new List<MedicationDto>();
+                    var medications = new List<Medication>();
 
-                    foreach (var item in droneDto.Medications)
+                    foreach (var item in _mapper.Map<IEnumerable<Medication>>(medicationDto))
                     {
-                        var suma = (medicationDtos.Sum(x => x.Weight) + item.Weight);
+                        var suma = (medications.Sum(x => x.Weight) + item.Weight);
                         if (suma > droneEntity.WeightLimit)
                         {
                             break;
                         }
-                        medicationDtos.Add(item);
+                        medications.Add(item);
                     }
-                    droneEntity.Medications?.AddRange(_mapper.Map<IEnumerable<Medication>>(medicationDtos));
+                    droneEntity.Items = new List<ItemBase>(medications);
                     droneEntity.State = StateEnum.LOADED.ToString();
                     _context.Entry(droneEntity).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
@@ -135,23 +140,23 @@ namespace DronesAPI.Controllers
         /// <summary>
         /// checking loaded medication items for a given drone
         /// </summary>
-        /// <param name="drone"></param>
+        /// <param name="droneId"></param>
         /// <returns></returns>
-        [HttpGet("{drone}")]
-        public async Task<ActionResult<IEnumerable<MedicationDto>>> CheckingLoadedMedications([FromBody] Drone drone)
+        [HttpGet("LoadedMedicationsDrone/{droneId}", Name = "LoadedMedicationsDrone")]
+        public async Task<ActionResult> GetLoadedMedicationsDrone(Guid droneId)
         {
-            var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(drone.Id)
-                && x.State.Equals(StateEnum.LOADED.ToString()) || x.State.Equals(StateEnum.DELIVERING.ToString()));
+            var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(droneId) 
+                && x.State.Equals(StateEnum.LOADED.ToString()));
             if (droneEntity == null)
             {
-                return NotFound(drone);
+                return NotFound();
             }
-            var medications = droneEntity.Medications?.Select(x => _mapper.Map<MedicationDto>(x));
+            var medications = droneEntity.Items?.OfType<Medication>().Select(x => _mapper.Map<MedicationDto>(x));
             if (medications == null)
             {
                 return NoContent();
             }
-            return medications.ToList();
+            return Ok(medications.ToList());
         }
     }
 }
