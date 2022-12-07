@@ -142,8 +142,8 @@ namespace DronesAPI.Controllers
         /// </summary>
         /// <param name="droneId"></param>
         /// <returns></returns>
-        [HttpGet("LoadedMedicationsDrone/{droneId}", Name = "LoadedMedicationsDrone")]
-        public async Task<ActionResult> GetLoadedMedicationsDrone(Guid droneId)
+        [HttpGet("LoadedMedications/{droneId}", Name = "LoadedMedications")]
+        public async Task<ActionResult> GetLoadedMedications(Guid droneId)
         {
             var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(droneId) 
                 && x.State.Equals(StateEnum.LOADED.ToString()));

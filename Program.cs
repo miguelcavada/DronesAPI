@@ -1,5 +1,6 @@
 using DronesAPI.Data;
 using DronesAPI.Models;
+using DronesAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
@@ -13,6 +14,7 @@ builder.Services.AddDbContext<DronesContext>(options => options.UseInMemoryDatab
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddTransient<IHostedService, DroneBatteryHostedService>();
 
 var app = builder.Build();
 
