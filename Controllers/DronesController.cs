@@ -71,7 +71,7 @@ namespace DronesAPI.Controllers
         /// </summary>
         /// <param name="droneId"></param>
         /// <returns></returns>
-        [HttpGet("BatteryLevel/{droneId}", Name = "BatteryLevel")]
+        [HttpGet("BatteryLevel-{droneId}", Name = "BatteryLevel")]
         public async Task<ActionResult> GetBatteryLevel(Guid droneId)
         {
             var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(droneId));
@@ -83,7 +83,7 @@ namespace DronesAPI.Controllers
             {
                 return BadRequest("Invalid model object");
             }
-            return Ok($"The battery level for given drone is {droneEntity.BatteryCapacity}%");
+            return Ok(new { V = $"The battery level for given drone is {droneEntity.BatteryCapacity}%" });
         }
 
         /// <summary>
@@ -128,8 +128,8 @@ namespace DronesAPI.Controllers
                     droneEntity.State = StateEnum.LOADED.ToString();
                     _context.Entry(droneEntity).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
+                    return Ok(new { drone = droneEntity.Id, medications = medications.Select(x => _mapper.Map<MedicationDto>(x)) });
                 }
-                return Ok();
             }
             catch (Exception ex)
             {
@@ -142,10 +142,10 @@ namespace DronesAPI.Controllers
         /// </summary>
         /// <param name="droneId"></param>
         /// <returns></returns>
-        [HttpGet("LoadedMedications/{droneId}", Name = "LoadedMedications")]
+        [HttpGet("{droneId}", Name = "LoadedMedications")]
         public async Task<ActionResult> GetLoadedMedications(Guid droneId)
         {
-            var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(droneId) 
+            var droneEntity = await _context.Drones.FirstOrDefaultAsync(x => x.Id.Equals(droneId)
                 && x.State.Equals(StateEnum.LOADED.ToString()));
             if (droneEntity == null)
             {
@@ -156,7 +156,7 @@ namespace DronesAPI.Controllers
             {
                 return NoContent();
             }
-            return Ok(medications.ToList());
+            return Ok(medications);
         }
     }
 }
